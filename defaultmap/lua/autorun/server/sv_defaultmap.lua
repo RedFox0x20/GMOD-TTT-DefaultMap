@@ -20,8 +20,29 @@ hook.Add("PostGamemodeLoaded", "defaultmap_postgamemode", function()
 	--[[
 		Config
 	--]]
-	rf_ttt_defaultmap = {}
-	rf_ttt_defaultmap.map = "ttt_minecraft_b5"
+	local rf_ttt_defaultmap = {}
+	rf_ttt_defaultmap.map = "ttt_minecraft_b5" -- The map to switch to
+	rf_ttt_defaultmap.empty_time = 300 -- Wait n seconds before switching
+	rf_ttt_defaultmap.use_timer = false -- Should we use a timer
+
+	--[[
+		If using a timer, create the timer and stop it.
+		Create a hook to stop the timer if a player joins.
+	]]--
+	if (rf_ttt_defaultmap.use_timer) then
+		timer.Create("rf_ttt_defaultmap_timer", rf_ttt_defaultmap.empty_time, 0,
+			function()
+				print("[defaultmap] Changing map to " .. rf_ttt_defaultmap.map)
+				RunConsoleCommand("changelevel", rf_ttt_defaultmap.map)
+			end)
+		timer.Stop("rf_ttt_defaultmap_timer")
+
+		hook.Add("PlayerConnect", "defaultmap_connect_timer_stop",
+				function(ply, ip)
+					print("[defaultmap] Timer stopped, player connected!")
+					timer.Stop("rf_ttt_defaultmap_timer")
+				end)
+	end
 
 	--[[
 		Change to the default map as named in rf_ttt_defaultmap.map.
@@ -32,8 +53,13 @@ hook.Add("PostGamemodeLoaded", "defaultmap_postgamemode", function()
 			We only want to changelevel if the current map is not the default map 
 		]]--
 		if (game.GetMap() ~= rf_ttt_defaultmap.map) then
-			print("[defaultmap] Changing map to " .. rf_ttt_defaultmap.map)
-			RunConsoleCommand("changelevel", rf_ttt_defaultmap.map)
+			if (rf_ttt_defaultmap.use_timer) then
+				print("[defaultmap] Change map timer started!")
+				timer.Start("rf_ttt_defaultmap_timer")
+			else
+				print("[defaultmap] Changing map to " .. rf_ttt_defaultmap.map)
+				RunConsoleCommand("changelevel", rf_ttt_defaultmap.map)
+			end
 		end
 	end
 
@@ -42,7 +68,6 @@ hook.Add("PostGamemodeLoaded", "defaultmap_postgamemode", function()
 		PlayerDisconnected hook.
 	]]--
 	function defaultmap_playerdisconnect(dc_ply)
-
 		local rf = RecipientFilter()
 		rf:AddAllPlayers()
 		rf:RemovePlayer(dc_ply)
