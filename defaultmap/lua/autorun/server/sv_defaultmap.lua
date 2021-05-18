@@ -14,6 +14,7 @@ hook.Add("PostGamemodeLoaded", "defaultmap_postgamemode", function()
 
 	if (gmod.GetGamemode().Name ~= "Trouble in Terrorist Town") then
 		print("[defaultmap] Not running! Gamemode is not TTT")
+		return
 	end
 
 	--[[
