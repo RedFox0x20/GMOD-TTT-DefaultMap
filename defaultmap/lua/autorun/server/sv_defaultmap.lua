@@ -1,30 +1,39 @@
 --[[ 
 	sv_defaultmap.lua by RedFox0x20
+	https://github.com/RedFox0x20/GMOD-TTT-DefaultMap
 
 	For use on TTT servers that want to have a default map to switch back to
 	when player activity has reduced.
 
 	When a player disconnects from the server, check to see if any players are
 	online. If there are no players or all players are spectators then change
-	to the default map.
+	to the default map. Only checking on a disconnect ensures that the script
+	uses minimal server resources.
 
-	We only want this script to run for TTT servers
+	--------------------------------------------------------------------------
+	
+	Config
+]]--
+local rf_ttt_defaultmap = {} -- Table to hold locals
+rf_ttt_defaultmap.map = "ttt_minecraft_b5" 	-- The map file to switch to
+rf_ttt_defaultmap.use_timer = false 		-- Should we delay the switch
+rf_ttt_defaultmap.empty_time = 300 			-- How long the timer should wait 
+
+--[[
+	Only run the script after the gamemode has loaded
 ]]--
 hook.Add("PostGamemodeLoaded", "defaultmap_postgamemode", function()		
 
+	--[[
+		Check that we are playing TTT, if not then script will not run as it is
+		dependant on methods defined in the TTT gamemode.
+	]]--
 	if (gmod.GetGamemode().Name ~= "Trouble in Terrorist Town") then
 		print("[defaultmap] Not running! Gamemode is not TTT")
 		return
 	end
 
-	--[[
-		Config
-	--]]
-	local rf_ttt_defaultmap = {}
-	rf_ttt_defaultmap.map = "ttt_minecraft_b5" -- The map to switch to
-	rf_ttt_defaultmap.empty_time = 300 -- Wait n seconds before switching
-	rf_ttt_defaultmap.use_timer = false -- Should we use a timer
-
+	
 	--[[
 		If using a timer, create the timer and stop it.
 		Create a hook to stop the timer if a player joins.
